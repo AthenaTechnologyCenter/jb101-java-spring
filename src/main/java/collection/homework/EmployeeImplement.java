@@ -85,10 +85,9 @@ public class EmployeeImplement implements IEmployee {
 
     @Override
     public List<AnnualLeaveEmployee> calculateAnnualLeaveAfterYear(List<Employee> employees) {
-        var annualLeaveEmployees = new ArrayList<AnnualLeaveEmployee>();
-        employees.forEach(employee -> {
-            annualLeaveEmployees.add(new AnnualLeaveEmployee(employee.getName(), calculateAnnualLeave(employee.getSeniority())));
-        });
+        var annualLeaveEmployees = employees.stream()
+                .map(employee ->
+                        new AnnualLeaveEmployee(employee.getName(), calculateAnnualLeave(employee.getSeniority()))).collect(Collectors.toList());
         return annualLeaveEmployees;
     }
 
