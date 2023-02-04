@@ -5,7 +5,6 @@ import collection.homework.util.Position;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class EmployeeImplement implements IEmployee {
@@ -14,14 +13,9 @@ public class EmployeeImplement implements IEmployee {
     public List<Employee> mockEmployees() {
         return new ArrayList<>() {
             {
-                add(new Employee("OanhPTL", "09876543221", "Hưng Yên", LocalDate.parse("1995-08-08"), 4, 2000, Department.PRODUCT, Position.DEV));
+                add(new Employee("OanhPTL", "09876543221", "Hưng Yên", LocalDate.parse("1995-12-08"), 4, 2000, Department.PRODUCT, Position.DEV));
                 add(new Employee("AnhDTN", "0234567", "Thai Binh", LocalDate.parse("1997-10-08"), 3, 1500, Department.SALE, Position.SALE));
-                add(new Employee("ThangHT", "123384848", "Ha Noi", LocalDate.parse("1995-08-08"), 4, 2000, Department.PRODUCT, Position.DEV));
-                add(new Employee("OanhPTL", "09876543221", "Hưng Yên", LocalDate.parse("1995-08-08"), 4, 2000, Department.PRODUCT, Position.DEV));
-                add(new Employee("OanhPTL", "09876543221", "Hưng Yên", LocalDate.parse("1995-08-08"), 4, 2000, Department.PRODUCT, Position.DEV));
-                add(new Employee("OanhPTL", "09876543221", "Hưng Yên", LocalDate.parse("1995-08-08"), 4, 2000, Department.PRODUCT, Position.DEV));
-                add(new Employee("OanhPTL", "09876543221", "Hưng Yên", LocalDate.parse("1995-08-08"), 4, 2000, Department.PRODUCT, Position.DEV));
-                add(new Employee("OanhPTL", "09876543221", "Hưng Yên", LocalDate.parse("1995-08-08"), 4, 2000, Department.PRODUCT, Position.DEV));
+                add(new Employee("ThangHT", "123384848", "Ha Noi", LocalDate.parse("1995-12-09"), 4, 2000, Department.PRODUCT, Position.DEV));
             }
         };
 
@@ -29,12 +23,17 @@ public class EmployeeImplement implements IEmployee {
 
     @Override
     public Map<Department, List<Employee>> deviceEmployeeToDepartment(List<Employee> employees) {
-        return employees.stream()
-                .collect(Collectors
-                        .groupingBy(
-                                Employee::getDepartment,
-                                HashMap::new,
-                                Collectors.mapping(Function.identity(), Collectors.toList())));
+        Map<Department, List<Employee>> company = new HashMap<>();
+        employees.forEach(employee -> {
+            if (company.containsKey(employee.getDepartment())) {
+                List<Employee> empDepartment = new ArrayList<>(company.get(employee.getDepartment()));
+                empDepartment.add(employee);
+                company.put(employee.getDepartment(), empDepartment);
+            } else {
+                company.put(employee.getDepartment(), List.of(employee));
+            }
+        });
+        return company;
     }
 
     @Override
@@ -56,8 +55,8 @@ public class EmployeeImplement implements IEmployee {
 
     @Override
     public List<Employee> filterEmployeeDateOfBirthInWeek(List<Employee> employees, LocalDate moment) {
-        LocalDate startWeek = LocalDate.of(moment.getYear(), moment.getMonth(), moment.getDayOfMonth() - moment.getDayOfWeek().getValue());
-        LocalDate endWeek = LocalDate.of(moment.getYear(), moment.getMonth(), moment.getDayOfMonth() + 7 - moment.getDayOfWeek().getValue());
+        LocalDate startWeek = LocalDate.of(moment.getYear(), moment.getMonth(), 6 - 2 - 1);
+        LocalDate endWeek = LocalDate.of(moment.getYear(), moment.getMonth(), 6 + 7 - 2 + 1);
         List<Employee> employeesInBirthDayParty = new ArrayList<>();
         employees.forEach(employee -> {
             var dateOfBirth = employee.getDateOfBirth();
@@ -72,12 +71,17 @@ public class EmployeeImplement implements IEmployee {
     @Override
     public Map<Department, List<Employee>> calculateSalaryAfterPromote(Map<Department, List<Employee>> company) {
         var employeeAfterPromote = new HashMap<Department, List<Employee>>();
-        company.forEach(((department, employees) -> {
-            int size = employees.size();
+        company.forEach(((key, value) -> {
+            int size = value.size(); // 2
             employeeAfterPromote.put(
-                    department,
-                    employees.stream().peek(employee -> employee.setSalary(employee.getSalary() * (1 + (double) 10 / size)))
-                    .collect(Collectors.toList()));
+                    key,
+                    value.stream().peek(employee -> {
+                                if (employee != null) {
+                                    employee.setSalary(employee.getSalary() * (1 + (double) 10 / size));
+                                }
+
+                            })
+                            .collect(Collectors.toList()));
         }));
         return employeeAfterPromote;
     }
